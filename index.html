@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>PW6</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <style>
+            #map {
+                
+                height: 100%;
+            }
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            #floating-panel {
+                position: absolute;
+                top: 10px;
+                left: 40%;
+                z-index: 5;
+                background-color: #fff;
+                padding: 10px;
+                border: 1px solid #999;
+                text-align: center;
+                padding: 10px;
+                margin-top: 10px;
+            }
+        </style>
+        
+        <script>
+            var map;
+            function initMap() {
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: {lat: 32.7767, lng: -96.7970},
+                    zoom: 15
+                });
+                
+                var geocoder = new google.maps.Geocoder();
+                document.getElementById('submit').addEventListener('click', function() {
+                    geocodeAddress(geocoder, map);
+                });
+            }
+            function geocodeAddress(geocoder, resultsMap) {
+                var address = document.getElementById('address').value;
+                geocoder.geocode({'address': address}, function(results, status) {
+                    if (status === 'OK') {
+                        resultsMap.setCenter(results[0].geometry.location);
+                        
+                        var marker = new google.maps.Marker({
+                            map: resultsMap,
+                            position: results[0].geometry.location,
+                            icon: {
+                                path: google.maps.SymbolPath.CIRCLE,
+                                scale: 10
+                            }
+                        });
+
+                        var request = {
+                            location: results[0].geometry.location,
+                            radius: '1500',
+                            type: ['pharmacy']
+                        };
+        
+                        var service = new google.maps.places.PlacesService(map);
+                        service.nearbySearch(request, callback);
+                    } 
+                    else {
+                        console.log('Geocoding Failed: ' + status);
+                    }
+                    });
+            }
+                
+            function callback(res, status) {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
+                    for (var i = 0; i < res.length; i++) {
+                        var place = res[i];
+                        createMarker(res[i]);
+                    }
+                }
+            }
+    
+            function createMarker(place) {
+                new google.maps.Marker({
+                    position: place.geometry.location,
+                    map: map
+                });
+            }
+    
+        </script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCswMte50IBjdugGSW2Uk_WbcdFXJDhQw&callback=initMap&libraries=places" async defer></script>
+    
+    </head>
+
+    <body>
+        <div id="floating-panel">
+        		<form>
+                    <input id="address" type="text" placeholder="Enter Address">
+                    <input id="submit" type="button" value="Search">
+                </form>
+        </div>    
+
+        <!-- Circle Marker indicates the place used to geocode-->
+        <!-- Default Markers display pharmacies -->
+        <div id="map"></div>
+
+    </body>
+</html>
